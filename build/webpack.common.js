@@ -6,6 +6,9 @@ module.exports = {
         path: path.resolve(__dirname, '../dist'),
         filename: 'library.js',
     },
+    resolve: {
+        extensions: ['.ts'],
+    },
     module: {
         rules: [{ test: /\.ts$/, use: 'babel-loader' }],
     },
