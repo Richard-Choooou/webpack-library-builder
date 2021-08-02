@@ -8,10 +8,19 @@
     <script src="./library.js"></script>
 </head>
 <body>
+    <img id="image" src="" alt="">
     <button onclick="openA()">打开相册</button>
     <script>
         function openA() {
-            MyLibrary.clientInterfaceAdapter("target", 'action', {}, "123141231qwdasd")
+            MyLibrary.sendEventToClient("target", 'action', {}, (result) => {
+                var file = result.data.file
+                var fr = new FileReader();
+                fr.onload = function(ele){
+                    document.getElementById('image').src = ele.target.result
+                }
+                fr.readAsDataURL(file);
+                return "success"
+            })
         }
     </script>
 </body>

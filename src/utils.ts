@@ -11,3 +11,33 @@ export function generateRandomKey(length: number = 16): string {
 
     return str
 }
+
+export function transferData(data: any): any {
+    if (Object.prototype.toString.call(data) === "[object Object]") {
+        if ('$$senguoBridgePrivate' in data) { // jsbridge 需要转换类型的数据
+            if (data['$$type'] === 'file') { // 文件类型
+                return base64ToFile(data.name, data.mimeType, data.base64)
+            }
+        } else {
+            for (let i in data) {
+                data[i] = transferData(data[i])
+            }
+        }
+    } else if (Object.prototype.toString.call(data) === "[object Array]") {
+        for (let i = 0; i < data.lenght; i++) {
+            data[i] = transferData(data[i])
+        }
+    }
+
+    return data
+}
+
+function base64ToFile(fileName: string, mimeType: string, base64: string) {
+    let bstr = atob(base64)
+    let n = bstr.length
+    let u8arr = new Uint8Array(n);
+        while(n--){
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+    return new File([u8arr], fileName, {type: mimeType});
+}

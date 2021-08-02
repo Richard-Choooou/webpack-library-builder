@@ -12,5 +12,7 @@ export declare global {
         senguoBridge: {
             [key: string]: (...args: any) => void
         }
+
+        senguoJsBridgeWebSide: any
     }
 }
