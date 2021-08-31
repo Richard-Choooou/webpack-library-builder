@@ -3,7 +3,7 @@ export declare global {
     interface Window {
         webkit: {
             messageHandlers: {
-                senguoJsBridge: {
+                senguoBridge: {
                     postMessage: (params: any) => void
                 }
             }

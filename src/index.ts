@@ -1,5 +1,5 @@
-import { generateRandomKey, transferData } from "./utils"
-
+import { defines } from "./define"
+import { generateRandomKey, isIos, transferData } from "./utils"
 export interface ClientResult {
     success: boolean
     code?: string
@@ -13,7 +13,7 @@ type invokeClientMethodParams = {
 
 type invokeClientMethodCallback = (result: ClientResult) => void
 
-export abstract class BaseBridge {
+abstract class BaseBridge {
     private isReady = false
     private listenReadyFn = new Set<() => void>()
     private eventMap: {
@@ -23,7 +23,14 @@ export abstract class BaseBridge {
         [key: string]: (params: ClientResult) => void
     } = {}
 
-    protected abstract clientInterfaceAdapter(target: string, action: string, params?: any, callbackName?: string): void
+    public define = defines
+
+    protected abstract clientInterfaceAdapter(params: {
+        target: string,
+        action: string,
+        params?: invokeClientMethodParams,
+        callbackName?: string
+    }): void
 
     constructor() {
         this.initWebInterface()
@@ -107,20 +114,30 @@ export abstract class BaseBridge {
         if (callback) {
             const callbackName = generateRandomKey(32)
             this.callbackMap[callbackName] = callback
-            this.clientInterfaceAdapter(target, action, params, callbackName)
+            this.clientInterfaceAdapter({
+                target, action, params, callbackName
+            })
         } else if (params) {
             if (Object.prototype.toString.call(params) === "[object Object]") {
-                this.clientInterfaceAdapter(target, action, params)
+                this.clientInterfaceAdapter({
+                    target, action, params
+                })
             } else if (Object.prototype.toString.call(params) === "[object Function]") {
                 const callbackName = generateRandomKey(32)
                 this.callbackMap[callbackName] = params as invokeClientMethodCallback
-                this.clientInterfaceAdapter(target, action, {}, callbackName)
+                this.clientInterfaceAdapter({
+                    target, action, params: {}, callbackName
+                })
             } else {
                 console.warn(`[jsBridge] 错误的参数类型：${params}，仅能传入键值对对象或者函数` )
-                this.clientInterfaceAdapter(target, action)
+                this.clientInterfaceAdapter({
+                    target, action
+                })
             }
         } else {
-            this.clientInterfaceAdapter(target, action)
+            this.clientInterfaceAdapter({
+                target, action
+            })
         }
     }
 
@@ -143,13 +160,13 @@ class IosBridge extends BaseBridge {
         super()
     }
 
-    protected clientInterfaceAdapter(target: string, action: string, params?: invokeClientMethodParams, callbackName?: string) {
-        window.webkit.messageHandlers.senguoJsBridge.postMessage({
-            target,
-            action,
-            params,
-            callbackName
-        })
+    protected clientInterfaceAdapter(params: {
+        target: string,
+        action: string,
+        params?: invokeClientMethodParams,
+        callbackName?: string
+    }) {
+        window.webkit.messageHandlers.senguoBridge.postMessage(params)
     }
 }
 
@@ -158,17 +175,20 @@ class AndroidBridge extends BaseBridge {
         super()
     }
 
-    protected clientInterfaceAdapter(target: string, action: string, params?: invokeClientMethodParams, callbackName?: string) {
-        window.senguoBridge.sendEvent(JSON.stringify({
-            target,
-            action,
-            params,
-            callbackName
-        }))
+    protected clientInterfaceAdapter(params: {
+        target: string,
+        action: string,
+        params?: invokeClientMethodParams,
+        callbackName?: string
+    }) {
+        window.senguoBridge.sendEvent(JSON.stringify(params))
     }
 }
 
-export default new AndroidBridge()
+const bridge = isIos ? new IosBridge() : new AndroidBridge()
+
+
+export default bridge
 
 
 // export const Test

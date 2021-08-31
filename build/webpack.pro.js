@@ -5,9 +5,9 @@ module.exports = merge(commonConfig, {
     mode: 'production',
     output: {
         library: {
-            name: 'MyLibrary',
+            name: 'UniversalBridge',
             type: 'umd',
             export: 'default'
         }
     }
-}) 
+})

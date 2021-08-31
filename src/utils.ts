@@ -32,6 +32,12 @@ export function transferData(data: any): any {
     return data
 }
 
+const userAgent = navigator.userAgent
+
+export const isIos = !!userAgent.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/)
+
+export const isAndroid = userAgent.indexOf('Android') > -1 || userAgent.indexOf('Adr') > -1;
+
 function base64ToFile(fileName: string, mimeType: string, base64: string) {
     let bstr = atob(base64)
     let n = bstr.length
