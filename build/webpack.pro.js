@@ -5,7 +5,7 @@ module.exports = merge(commonConfig, {
     mode: 'production',
     output: {
         library: {
-            name: 'MyLibrary',
+            name: 'PolyLine',
             type: 'umd',
             export: 'default'
         }
